@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Charterwala – Bus Reservation System</title>
+<style>
+:root{--bg:#f6f7fb;--card:#fff;--ink:#16202e;--mute:#5d6b7e;--brand:#e8590c;--brand2:#1c3d6e;--line:#e1e5ec;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10151d;--card:#1a212c;--ink:#eef2f8;--mute:#9aa8bb;--brand:#ff8a4c;--brand2:#7fa8e6;--line:#2b3442;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#10151d;--card:#1a212c;--ink:#eef2f8;--mute:#9aa8bb;--brand:#ff8a4c;--brand2:#7fa8e6;--line:#2b3442;color-scheme:dark}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:70px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.55}
+header{position:sticky;top:env(safe-area-inset-top,0px);background:var(--card);border-bottom:1px solid var(--line);z-index:5}
+nav{max-width:1000px;margin:auto;display:flex;align-items:center;gap:14px;padding:10px 16px;flex-wrap:wrap}
+.logo{font-weight:800;font-size:1.3rem;color:var(--brand);margin-right:auto}
+nav a{color:var(--ink);text-decoration:none;font-size:.92rem;font-weight:600}nav a:hover{color:var(--brand)}
+main{max-width:1000px;margin:auto;padding:0 16px 40px}
+.hero{background:linear-gradient(135deg,var(--brand2),#0b1d38);color:#fff;border-radius:16px;margin-top:16px;padding:28px 20px}
+.hero h1{margin:0 0 6px;font-size:1.9rem}.hero p{margin:0 0 18px;opacity:.9}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+input,select,button{font:inherit;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink);width:100%}
+button{cursor:pointer;background:var(--brand);color:#fff;border:0;font-weight:700}button:hover{filter:brightness(1.08)}
+h2{margin:34px 0 10px;font-size:1.4rem;color:var(--brand2)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:10px}
+.bus{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}
+.bus h3{margin:0;font-size:1.05rem}.meta{color:var(--mute);font-size:.88rem}
+.price{font-weight:800;font-size:1.2rem;text-align:right}.tag{display:inline-block;font-size:.72rem;background:var(--line);padding:2px 8px;border-radius:99px;margin-right:4px}
+.bus button{width:auto;padding:8px 16px;margin-top:6px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px}
+.note{font-size:.84rem;color:var(--mute)}
+footer{text-align:center;color:var(--mute);font-size:.85rem;padding:20px}
+.dev{border-left:4px solid var(--brand)}
+</style>
+</head>
+<body>
+<header><nav>
+<span class="logo">🚌 Charterwala</span>
+<a href="#home">Home</a><a href="#search">Search</a><a href="#buses">View Buses</a><a href="#book">Book a Bus</a><a href="#cancel">Cancel Booking</a><a href="#about">About</a><a href="#developer">Developer</a>
+</nav></header>
+<main>
+<section class="hero" id="home">
+<h1>Find. Compare. Book.</h1>
+<p>Charterwala shows real bus routes and fares collected from India’s top booking platforms.</p>
+<div class="row" id="search">
+<input id="from" list="cities" placeholder="From (e.g. Gwalior)">
+<input id="to" list="cities" placeholder="To (e.g. Bhopal)">
+<input id="date" type="date">
+<button onclick="doSearch()">Search Buses</button>
+</div>
+<datalist id="cities"></datalist>
+</section>
+
+<h2 id="buses">View Buses</h2>
+<div class="row" style="margin-bottom:10px">
+<select id="sort" onchange="render()"><option value="fare">Sort: Lowest fare</option><option value="dep">Sort: Departure time</option></select>
+<button onclick="reset()" style="background:var(--brand2)">Show all routes</button>
+</div>
+<div id="list"></div>
+<p class="note">Data snapshot collected 24 Oct 2026 from redBus, EaseMyTrip, Via.com and AbhiBus. Fares are “starting from” prices and change with date, demand and seat type.</p>
+
+<h2 id="book">Book a Bus</h2>
+<div class="card">
+<ol style="margin:0;padding-left:20px">
+<li>Search a route or browse <b>View Buses</b>.</li>
+<li>Press <b>Book Now</b> on a bus. Charterwala opens the exact platform the data came from.</li>
+<li>Pick seats, boarding point and pay there. You get an e-ticket from that platform.</li>
+</ol>
+</div>
+
+<h2 id="cancel">Cancel Booking</h2>
+<div class="card">
+<p style="margin-top:0">Cancellations are processed by the platform that issued your ticket, as per the operator’s policy.</p>
+<div class="row">
+<select id="plat"><option value="https://www.redbus.in">redBus</option><option value="https://www.easemytrip.com/bus/">EaseMyTrip</option><option value="https://in.via.com">Via.com</option><option value="https://www.abhibus.com">AbhiBus</option></select>
+<input id="pnr" placeholder="Ticket / PNR number (for your reference)">
+<button onclick="cancelGo()">Go to Cancellation</button>
+</div>
+</div>
+
+<h2 id="about">About the Project</h2>
+<div class="grid">
+<div class="card"><b>Problem</b><br><span class="meta">Travellers compare buses across many apps. Charterwala brings routes and fares into one clean view.</span></div>
+<div class="card"><b>How it works</b><br><span class="meta">Route data is collected from public booking pages. Booking and payment are handed to the original platform, so Charterwala never touches payments.</span></div>
+<div class="card"><b>Tech stack</b><br><span class="meta">HTML5, CSS3 (responsive grid, dark mode), vanilla JavaScript. Single file, no frameworks.</span></div>
+<div class="card"><b>Future scope</b><br><span class="meta">Live data through a backend API or scraper (Node.js + database), user login, seat maps, fare alerts and price history.</span></div>
+</div>
+<p class="note">Why a snapshot? A static page cannot safely fetch other sites’ data in the browser (CORS limits). A real-time version needs a server-side layer, which is the natural next step for this project.</p>
+
+<h2 id="developer">Developer</h2>
+<div class="card dev">
+<h3 style="margin:0">Priyansh Karole</h3>
+<div class="meta">1st Year · B.Tech Computer Science Engineering<br>Madhav Institute of Technology and Science (MITS), Gwalior</div>
+</div>
+</main>
+<footer>© 2026 Charterwala · College project by Priyansh Karole · Not affiliated with the listed platforms</footer>
+
+<script>
+var BUSES=[
+{f:"Gwalior",t:"Bhopal",op:"Raj Kalpana Travels",ty:"AC Sleeper/Seater 2+1",dep:"02:29",dur:"9h 46m",fare:649,pl:"EaseMyTrip",u:"https://www.easemytrip.com/bus/gwalior-to-bhopal-bus-distance/"},
+{f:"Gwalior",t:"Bhopal",op:"Shrinath Nandu Travels",ty:"Non-AC Sleeper 2+1",dep:"17:00",dur:"16h 30m",fare:300,pl:"Via.com",u:"https://in.via.com/bus-tickets/from-gwalior-to-bhopal"},
+{f:"Bhopal",t:"Gwalior",op:"Bhopal Travels",ty:"Non-AC Seater/Sleeper 2+1",dep:"15:45",dur:"12h 0m",fare:600,pl:"Via.com",u:"https://in.via.com/bus-tickets/from-bhopal-to-gwalior"},
+{f:"Bhopal",t:"Gwalior",op:"Verma, Raj Kalpana, Mahalaxmi & more",ty:"Multiple types",dep:"17:15",dur:"~4h–12h",fare:600,pl:"AbhiBus",u:"https://www.abhibus.com/buses/18415/Bhopal-Gwalior"},
+{f:"Gwalior",t:"Biaora",op:"Raj Kalpana Travels",ty:"Bus",dep:"01:30",dur:"5h 30m",fare:400,pl:"redBus",u:"https://redbus.com/bus-ticket/gwalior-to-biaora"},
+{f:"Gwalior",t:"Biaora",op:"Raj Kalpana Travels",ty:"Bus",dep:"21:45",dur:"6h 37m",fare:400,pl:"redBus",u:"https://redbus.com/bus-ticket/gwalior-to-biaora"},
+{f:"Gwalior",t:"Biaora",op:"Balaji Bus Service",ty:"Bus",dep:"21:55",dur:"6h 5m",fare:400,pl:"redBus",u:"https://redbus.com/bus-ticket/gwalior-to-biaora"},
+{f:"Jhansi",t:"Bhopal",op:"Bhopal Travels",ty:"Bus",dep:"04:00",dur:"5h 28m",fare:550,pl:"redBus",u:"https://redbus.com/bus-ticket/jhansi-to-bhopal"},
+{f:"Jhansi",t:"Bhopal",op:"Betrwanti Travels",ty:"Bus",dep:"23:00",dur:"6h 0m",fare:550,pl:"redBus",u:"https://redbus.com/bus-ticket/jhansi-to-bhopal"},
+{f:"Jhansi",t:"Bhopal",op:"Hans Travels (I) Pvt. Ltd.",ty:"Bus",dep:"22:40",dur:"6h 50m",fare:550,pl:"redBus",u:"https://redbus.com/bus-ticket/jhansi-to-bhopal"},
+{f:"Gwalior",t:"Roorkee",op:"Multiple operators",ty:"Bus",dep:"19:30",dur:"10h 45m",fare:800,pl:"redBus",u:"https://www.redbus.com/bus-ticket/gwalior-to-roorkee"},
+{f:"Sidhi",t:"Bhopal",op:"Multiple operators",ty:"Bus",dep:"15:50",dur:"14h 40m",fare:1699,pl:"redBus",u:"https://www.redbus.com/bus-ticket/sidhi-to-bhopal"}
+];
+var view=BUSES.slice();
+function $(i){return document.getElementById(i)}
+(function(){var c={};BUSES.forEach(function(b){c[b.f]=1;c[b.t]=1});$("cities").innerHTML=Object.keys(c).sort().map(function(x){return "<option value='"+x+"'>"}).join("");
+var d=new Date();$("date").value=d.toISOString().slice(0,10);render()})();
+function render(){
+var s=$("sort").value,v=view.slice().sort(function(a,b){return s=="fare"?a.fare-b.fare:a.dep.localeCompare(b.dep)});
+$("list").innerHTML=v.length?v.map(function(b){var i=BUSES.indexOf(b);return "<div class='card bus'><div><h3>"+b.f+" → "+b.t+"</h3><div class='meta'>"+b.op+"</div><div class='meta'><span class='tag'>"+b.ty+"</span><span class='tag'>Dep "+b.dep+"</span><span class='tag'>"+b.dur+"</span></div><button onclick='bookBus("+i+")'>Book Now on "+b.pl+" ↗</button></div><div class='price'>₹"+b.fare+"<div class='meta'>from · via "+b.pl+"</div></div></div>"}).join(""):"<div class='card'>No buses found for this route in our data snapshot. Try Gwalior, Bhopal, Jhansi, Biaora, Roorkee or Sidhi.</div>"}
+function doSearch(){var f=$("from").value.trim().toLowerCase(),t=$("to").value.trim().toLowerCase();
+view=BUSES.filter(function(b){return (!f||b.f.toLowerCase().indexOf(f)>-1)&&(!t||b.t.toLowerCase().indexOf(t)>-1)});render();$("buses").scrollIntoView()}
+function reset(){view=BUSES.slice();$("from").value="";$("to").value="";render()}
+function bookBus(i){var b=BUSES[i];window.open(b.u,"_blank","noopener")}
+function cancelGo(){window.open($("plat").value,"_blank","noopener")}
+</script>
+</body>
+</html>
