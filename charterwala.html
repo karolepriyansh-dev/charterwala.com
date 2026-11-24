@@ -30,6 +30,9 @@ h2{margin:34px 0 10px;font-size:1.4rem;color:var(--brand2)}
 .note{font-size:.84rem;color:var(--mute)}
 footer{text-align:center;color:var(--mute);font-size:.85rem;padding:20px}
 .dev{border-left:4px solid var(--brand)}
+.links{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.links a{background:var(--brand);color:#fff;text-decoration:none;padding:8px 16px;border-radius:8px;font-weight:700;font-size:.92rem}
+.links a:hover{filter:brightness(1.1)}
 </style>
 </head>
 <body>
@@ -44,6 +47,7 @@ footer{text-align:center;color:var(--mute);font-size:.85rem;padding:20px}
 <div class="row" id="search">
 <input id="from" list="cities" placeholder="From (e.g. Gwalior)">
 <input id="to" list="cities" placeholder="To (e.g. Bhopal)">
+<button onclick="swap()" style="background:var(--brand2)">⇄ Swap</button>
 <input id="date" type="date">
 <button onclick="doSearch()">Search Buses</button>
 </div>
@@ -53,10 +57,12 @@ footer{text-align:center;color:var(--mute);font-size:.85rem;padding:20px}
 <h2 id="buses">View Buses</h2>
 <div class="row" style="margin-bottom:10px">
 <select id="sort" onchange="render()"><option value="fare">Sort: Lowest fare</option><option value="dep">Sort: Departure time</option></select>
+<select id="pf" onchange="apply()"></select>
 <button onclick="reset()" style="background:var(--brand2)">Show all routes</button>
 </div>
+<div id="sum" class="note" style="margin-bottom:8px"></div>
 <div id="list"></div>
-<p class="note">Data snapshot collected 24 Oct 2026 from redBus, EaseMyTrip, Via.com and AbhiBus. Fares are “starting from” prices and change with date, demand and seat type.</p>
+<p class="note">Data snapshot collected Nov 2026 from redBus, EaseMyTrip, Via.com, AbhiBus, Ixigo and Rome2rio and MakeMyTrip. Fares are “starting from” prices and some timings come from listing pages for an earlier travel date, so they change with date, demand and seat type.</p>
 
 <h2 id="book">Book a Bus</h2>
 <div class="card">
@@ -90,36 +96,126 @@ footer{text-align:center;color:var(--mute);font-size:.85rem;padding:20px}
 <div class="card dev">
 <h3 style="margin:0">Priyansh Karole</h3>
 <div class="meta">1st Year · B.Tech Computer Science Engineering<br>Madhav Institute of Technology and Science (MITS), Gwalior</div>
+<div class="links">
+<a href="https://mail.google.com/mail/?view=cm&fs=1&to=karolepriyansh@gmail.com" target="_blank" rel="noopener noreferrer">✉️ karolepriyansh@gmail.com</a>
+<a href="https://www.linkedin.com/in/priyansh-karole-735a4834b/" target="_blank" rel="noopener noreferrer">💼 LinkedIn</a>
+<a href="https://github.com/karolepriyansh-dev" target="_blank" rel="noopener noreferrer">💻 GitHub</a>
+</div>
 </div>
 </main>
 <footer>© 2026 Charterwala · College project by Priyansh Karole · Not affiliated with the listed platforms</footer>
 
 <script>
-var BUSES=[
-{f:"Gwalior",t:"Bhopal",op:"Raj Kalpana Travels",ty:"AC Sleeper/Seater 2+1",dep:"02:29",dur:"9h 46m",fare:649,pl:"EaseMyTrip",u:"https://www.easemytrip.com/bus/gwalior-to-bhopal-bus-distance/"},
-{f:"Gwalior",t:"Bhopal",op:"Shrinath Nandu Travels",ty:"Non-AC Sleeper 2+1",dep:"17:00",dur:"16h 30m",fare:300,pl:"Via.com",u:"https://in.via.com/bus-tickets/from-gwalior-to-bhopal"},
-{f:"Bhopal",t:"Gwalior",op:"Bhopal Travels",ty:"Non-AC Seater/Sleeper 2+1",dep:"15:45",dur:"12h 0m",fare:600,pl:"Via.com",u:"https://in.via.com/bus-tickets/from-bhopal-to-gwalior"},
-{f:"Bhopal",t:"Gwalior",op:"Verma, Raj Kalpana, Mahalaxmi & more",ty:"Multiple types",dep:"17:15",dur:"~4h–12h",fare:600,pl:"AbhiBus",u:"https://www.abhibus.com/buses/18415/Bhopal-Gwalior"},
-{f:"Gwalior",t:"Biaora",op:"Raj Kalpana Travels",ty:"Bus",dep:"01:30",dur:"5h 30m",fare:400,pl:"redBus",u:"https://redbus.com/bus-ticket/gwalior-to-biaora"},
-{f:"Gwalior",t:"Biaora",op:"Raj Kalpana Travels",ty:"Bus",dep:"21:45",dur:"6h 37m",fare:400,pl:"redBus",u:"https://redbus.com/bus-ticket/gwalior-to-biaora"},
-{f:"Gwalior",t:"Biaora",op:"Balaji Bus Service",ty:"Bus",dep:"21:55",dur:"6h 5m",fare:400,pl:"redBus",u:"https://redbus.com/bus-ticket/gwalior-to-biaora"},
-{f:"Jhansi",t:"Bhopal",op:"Bhopal Travels",ty:"Bus",dep:"04:00",dur:"5h 28m",fare:550,pl:"redBus",u:"https://redbus.com/bus-ticket/jhansi-to-bhopal"},
-{f:"Jhansi",t:"Bhopal",op:"Betrwanti Travels",ty:"Bus",dep:"23:00",dur:"6h 0m",fare:550,pl:"redBus",u:"https://redbus.com/bus-ticket/jhansi-to-bhopal"},
-{f:"Jhansi",t:"Bhopal",op:"Hans Travels (I) Pvt. Ltd.",ty:"Bus",dep:"22:40",dur:"6h 50m",fare:550,pl:"redBus",u:"https://redbus.com/bus-ticket/jhansi-to-bhopal"},
-{f:"Gwalior",t:"Roorkee",op:"Multiple operators",ty:"Bus",dep:"19:30",dur:"10h 45m",fare:800,pl:"redBus",u:"https://www.redbus.com/bus-ticket/gwalior-to-roorkee"},
-{f:"Sidhi",t:"Bhopal",op:"Multiple operators",ty:"Bus",dep:"15:50",dur:"14h 40m",fare:1699,pl:"redBus",u:"https://www.redbus.com/bus-ticket/sidhi-to-bhopal"}
+var E="https://www.easemytrip.com/bus/";
+/* [from, to, operator, bus type, departure, duration, "from" fare in INR, platform, link] */
+var D=[
+["Gwalior","Bhopal","Raj Kalpana Travels","AC Sleeper/Seater 2+1","02:29","9h 46m",649,"EaseMyTrip","gwalior-to-bhopal-bus-distance/"],
+["Gwalior","Bhopal","Shrinath Nandu Travels","Non-AC Sleeper 2+1","17:00","16h 30m",300,"Via.com","https://in.via.com/bus-tickets/from-gwalior-to-bhopal"],
+["Bhopal","Gwalior","Bhopal Travels","Non-AC Seater/Sleeper 2+1","15:45","12h 0m",600,"Via.com","https://in.via.com/bus-tickets/from-bhopal-to-gwalior"],
+["Bhopal","Gwalior","Verma, Raj Kalpana, Mahalaxmi & more","Multiple types","17:15","—",600,"AbhiBus","https://www.abhibus.com/buses/18415/Bhopal-Gwalior"],
+["Gwalior","Biaora","Raj Kalpana Travels","Bus","01:30","5h 30m",400,"redBus","https://redbus.com/bus-ticket/gwalior-to-biaora"],
+["Gwalior","Biaora","Raj Kalpana Travels","Bus","21:45","6h 37m",400,"redBus","https://redbus.com/bus-ticket/gwalior-to-biaora"],
+["Gwalior","Biaora","Balaji Bus Service","Bus","21:55","6h 5m",400,"redBus","https://redbus.com/bus-ticket/gwalior-to-biaora"],
+["Jhansi","Bhopal","Bhopal Travels","Bus","04:00","5h 28m",550,"redBus","https://redbus.com/bus-ticket/jhansi-to-bhopal"],
+["Jhansi","Bhopal","Betrwanti Travels","Bus","23:00","6h 0m",550,"redBus","https://redbus.com/bus-ticket/jhansi-to-bhopal"],
+["Jhansi","Bhopal","Hans Travels (I) Pvt. Ltd.","Bus","22:40","6h 50m",550,"redBus","https://redbus.com/bus-ticket/jhansi-to-bhopal"],
+["Gwalior","Roorkee","Multiple operators","Bus","19:30","10h 45m",800,"redBus","https://www.redbus.com/bus-ticket/gwalior-to-roorkee"],
+["Sidhi","Bhopal","Multiple operators","Bus","15:50","14h 40m",1699,"redBus","https://www.redbus.com/bus-ticket/sidhi-to-bhopal"],
+["Gwalior","Delhi","Raj Kalpana Travels","AC Seater/Sleeper","01:15","6h 40m",599,"EaseMyTrip","gwalior-to-delhi-bus-tickets/"],
+["Gwalior","Delhi","Hans Travels","AC Sleeper","03:35","6h 10m",611,"EaseMyTrip","gwalior-to-delhi-bus-tickets/"],
+["Gwalior","Delhi","Raj Kalpana Travels","AC Sleeper/Seater 2+1","20:10","6h 15m",399,"EaseMyTrip","gwalior-to-delhi-bus-distance/"],
+["Gwalior","Delhi","Multiple operators","Bus (all types)","00:14","~6h 39m",490,"redBus","https://www.redbus.in/bus-tickets/gwalior-to-delhi"],
+["Gwalior","Delhi","Multiple operators","AC Bus","00:40","6h 15m",799,"AbhiBus","https://abhibus.com/bus-booking/ac-buses-from-gwalior-delhi-ticket-booking"],
+["Delhi","Gwalior","Sharad Travels","AC Sleeper 2+1","22:30","7h 0m",549,"EaseMyTrip","isbt-kashmiri-gate-to-gwalior-bus"],
+["Delhi","Gwalior","FlixBus","Bharat Benz AC Seater","10:30","8h 45m",427,"EaseMyTrip","https://easemytrip.com/bus/mahipalpur-to-gwalior-bus"],
+["Delhi","Gwalior","Multiple operators","AC Bus","00:40","~6h 15m",399,"AbhiBus","https://www.abhibus.com/bus-booking/ac-buses-from-delhi-gwalior-ticket-booking"],
+["Delhi","Gwalior","Multiple operators","Bus","—","—",525,"Via.com","https://in.via.com/bus-tickets/from-delhi-to-gwalior"],
+["Bhopal","Indore","Verma Travels","AC Sleeper Volvo","05:30","4h 0m",200,"EaseMyTrip","bhopal-to-indore-bus-tickets"],
+["Bhopal","Indore","Hans Travels","Non-AC Sleeper Deluxe","04:00","3h 0m",306,"EaseMyTrip","bhopal-to-indore-bus-tickets"],
+["Indore","Bhopal","Verma Travels","AC Sleeper","16:40","4h 30m",238,"EaseMyTrip","indore-to-bhopal-bus-tickets"],
+["Bhopal","Indore","NueGo","AC Electric Bus","01:00","3h 50m",207,"redBus","https://redbus.com/bus-ticket/bhopal-to-indore"],
+["Bhopal","Indore","Chartered Speed Limited","Bus","00:30","3h 30m",207,"redBus","https://redbus.com/bus-ticket/bhopal-to-indore"],
+["Indore","Bhopal","Chartered Bus","Bus","00:30","3h 22m",227,"redBus","https://www.redbus.com/bus-ticket/indore-to-bhopal"],
+["Bhopal","Indore","Multiple operators","AC Bus","02:10","4h 15m",299,"AbhiBus","https://www.abhibus.com/bus-booking/ac-buses-from-bhopal-indore-ticket-booking"],
+["Indore","Bhopal","Bhopal Travels","Non-AC Seater-Sleeper","00:40","~4h",200,"AbhiBus","https://abhibus.com/buses/139/Indore-Hanmakonda"],
+["Indore","Bhopal","Multiple operators","Bus","07:15","~4h",308,"AbhiBus","https://abhibus.com/buses/139/Indore-Bhopal"],
+["Indore","Bhopal","Multiple operators (77)","Bus","—","~4h",250,"Ixigo","https://www.ixigo.com/buses/indore-bhopal-sts"],
+["Delhi","Jaipur","Rinku Travels","AC Seater/Sleeper 2+1","01:15","6h 0m",350,"EaseMyTrip","https://easemytrip.com/bus/delhi-to-jaipur-bus-tickets"],
+["Delhi","Jaipur","Ashok Travels Mandsaur","Non-AC Sleeper 2+1","17:00","6h 30m",700,"EaseMyTrip","https://easemytrip.com/bus/delhi-to-jaipur-bus-tickets"],
+["Delhi","Jaipur","Khaira Transporters","AC Sleeper 2+1","04:00","5h 40m",249,"EaseMyTrip","delhi-to-jaipur-bus-distance/"],
+["Delhi","Jaipur","Multiple operators","Bus (all types)","00:00","5h 4m",420,"redBus","https://redbus.com/bus-ticket/delhi-to-jaipur"],
+["Jaipur","Delhi","Master Travels (Raniwal)","AC Seater/Sleeper 2+2","23:55","5h 45m",371,"EaseMyTrip","jaipur-delhi.html"],
+["Jaipur","Delhi","Shree Shakti Travels","Non-AC Sleeper/Seater 2+1","23:40","6h 10m",326,"EaseMyTrip","jaipur-delhi.html"],
+["Jaipur","Delhi","Multiple operators","Bus (all types)","—","6h–7h",225,"redBus","https://www.redbus.com/bus-ticket/jaipur-to-delhi"],
+["Pune","Mumbai","Shrinath Solitaire","AC Sleeper Bharat Benz","14:15","3h 45m",300,"EaseMyTrip","pune-to-mumbai-bus-distance/"],
+["Pune","Mumbai","Anand Travels","AC Sleeper","06:00","—",300,"EaseMyTrip","pune-to-mumbai-bus-distance/"],
+["Mumbai","Pune","Blue Star","AC Seater 2+2","08:00","5h 15m",270,"EaseMyTrip","airport-to-pune-bus/"],
+["Mumbai","Pune","Multiple operators","Bus (all types)","04:45","~4h",249,"redBus","https://www.redbus.in/bus-tickets/mumbai-to-pune"],
+["Mumbai","Pune","Blossom Travels (Kolhapur)","Non-AC Seater-Sleeper","—","~5h",260,"AbhiBus","https://abhibus.com/buses/47/Vashi-Pune"],
+["Mumbai","Pune","MSRTC (Dadar–Swargate)","State bus, hourly","05:12","3h 29m",277,"Rome2rio","https://www.rome2rio.com/Bus/Mumbai/Pune"],
+["Bangalore","Chennai","Jabbar, Fresh Bus, NueGo, FlixBus","Sleeper","00:05","7h 12m",241,"EaseMyTrip","bengaluru-to-chennai-sleeper-bus-ticket"],
+["Bangalore","Chennai","Multiple operators","AC Bus","01:15","6h 40m",489,"AbhiBus","https://www.abhibus.com/bus-booking/ac-buses-from-bangalore-chennai-ticket-booking"],
+["Bangalore","Chennai","FlixBus, IntrCity, KSRTC & more","Bus","—","~7h",319,"Ixigo","https://www.ixigo.com/buses/bangalore-chennai-sts"],
+["Chennai","Bangalore","zingbus plus","AC Sleeper 2+1","22:25","7h 15m",415,"EaseMyTrip","https://easemytrip.com/bus/padi-to-bangalore-bus"],
+["Chennai","Bangalore","Mettur Super Services","AC Seater/Sleeper","22:55","6h 40m",467,"EaseMyTrip","https://easemytrip.com/bus/padi-to-bangalore-bus"],
+["Chennai","Bangalore","National Travels NTA","AC Seater/Sleeper 2+1","22:15","5h 34m",500,"EaseMyTrip","https://easemytrip.com/bus/padi-to-bangalore-bus"],
+["Chennai","Bangalore","Multiple operators","Bus (all types)","—","~6h",300,"redBus","https://www.redbus.com/pt/passagem-onibus/chennai-para-bangalore"],
+["Delhi","Chandigarh","FlixBus","Eicher AC Seater","16:00","6h 10m",293,"EaseMyTrip","https://easemytrip.com/bus/khanna-market-to-chandigarh-bus"],
+["Delhi","Chandigarh","FlixBus","Eicher AC Seater","08:30","5h 40m",440,"EaseMyTrip","https://easemytrip.com/bus/khanna-market-to-chandigarh-bus"],
+["Delhi","Chandigarh","Ram Dalal Travels","AC Semi Sleeper Premium","20:00","5h 15m",490,"EaseMyTrip","https://easemytrip.com/bus/khanna-market-to-chandigarh-bus"],
+["Delhi","Chandigarh","Deltin Travels","Bharat Benz AC 2+1","21:30","5h 29m",440,"EaseMyTrip","https://easemytrip.com/bus/red-fort-to-chandigarh-bus"],
+["Delhi","Chandigarh","Laxmi Holidays","Bharat Benz AC 2+1","22:00","5h 20m",359,"EaseMyTrip","https://easemytrip.com/bus/r-k-puram-to-chandigarh-bus"],
+["Delhi","Chandigarh","Multiple operators","Bus (all types)","00:20","4h 36m",404,"redBus","https://www.redbus.com/bus-ticket/delhi-to-chandigarh"],
+["Chandigarh","Delhi","FlixBus","AC Semi Sleeper","16:15","5h 45m",266,"EaseMyTrip","chandigarh-to-delhi-bus-tickets"],
+["Chandigarh","Delhi","HRTC Himdhara","AC Seater 3+2","22:35","5h 45m",385,"EaseMyTrip","chandigarh-to-delhi-bus-tickets"],
+["Chandigarh","Delhi","HRTC Himdhara","AC Seater 3+2","14:40","5h 50m",390,"EaseMyTrip","chandigarh-to-delhi-bus-tickets"],
+["Chandigarh","Delhi","Laxmi Holidays","Bharat Benz AC 2+1","04:30","4h 0m",371,"EaseMyTrip","https://easemytrip.com/bus/red-fort-to-chandigarh-bus"],
+["Gwalior","Agra","Citizen Travels & Cargo","Non-AC Sleeper","05:30","3h 0m",800,"EaseMyTrip","gwalior-to-agra-bus-tickets"],
+["Gwalior","Agra","Khajuraho Travels","AC Seater/Sleeper Deluxe","01:17","~3h 16m",417,"EaseMyTrip","gwalior-to-agra-bus-tickets"],
+["Gwalior","Agra","Kalpana Travels Gwalior","Non-AC Seater/Sleeper 2+1","20:30","3h 25m",549,"MakeMyTrip","https://www.makemytrip.com/bus-tickets/gwalior-agra-ac.html"],
+["Gwalior","Agra","Hans Travels (I) Pvt. Ltd.","Bus","03:35","2h 45m",198,"redBus","https://redbus.com/bus-ticket/gwalior-to-agra"],
+["Gwalior","Agra","Miles India Pvt. Ltd.","Bus","23:00","3h 30m",198,"redBus","https://redbus.com/bus-ticket/gwalior-to-agra"],
+["Agra","Gwalior","SKT Radhika Travels","AC Sleeper","19:00","3h 30m",400,"EaseMyTrip","agra-to-gwalior-bus-distance/"],
+["Agra","Gwalior","Raj Kalpana Travels","Non-AC Seater/Sleeper","00:15","~2h 47m",203,"AbhiBus","https://www.abhibus.com/buses/6695/Agra-Gwalior"],
+["Agra","Gwalior","Multiple operators (19)","AC Bus","00:30","1h 59m",430,"AbhiBus","https://www.abhibus.com/bus-booking/ac-buses-from-agra-gwalior-ticket-booking"],
+["Bangalore","Hyderabad","Dhanunjaya Travels","AC Sleeper/Semi Sleeper 2+1","20:30","10h 0m",490,"EaseMyTrip","silk-board-to-hyderabad-bus"],
+["Bangalore","Hyderabad","Dhanunjaya Travels","AC Seater/Sleeper Hybrid","22:00","9h 40m",599,"EaseMyTrip","silk-board-to-hyderabad-bus"],
+["Bangalore","Hyderabad","Orange Tours and Travels","Volvo 9600 AC Sleeper","21:00","10h 0m",300,"EaseMyTrip","mahadevapura-to-hyderabad-bus"],
+["Hyderabad","Bangalore","Orange Tours and Travels","Scania Multi-Axle AC Sleeper","15:30","9h 45m",400,"EaseMyTrip","mahadevapura-to-hyderabad-bus"],
+["Bangalore","Hyderabad","IntrCity SmartBus","AC Seater/Sleeper Hybrid 2+1","20:35","9h 15m",669,"EaseMyTrip","madiwala-to-hyderabad-bus"],
+["Bangalore","Hyderabad","Scania Multi-Axle","AC Semi Sleeper 2+2","03:40","7h 50m",800,"EaseMyTrip","madiwala-to-hyderabad-bus"],
+["Bangalore","Hyderabad","Yas Travels","AC Semi Sleeper Premium","00:50","7h 40m",800,"EaseMyTrip","miyapur-to-bangalore-bus"],
+["Hyderabad","Bangalore","SRS Travels","Non-AC Seater/Sleeper","22:00","9h 30m",1004,"EaseMyTrip","hyderabad-to-bengaluru-sleeper-bus-ticket"],
+["Hyderabad","Bangalore","KSRTC, TGSRTC, FlixBus, IntrCity & more","Bus","—","~9h 30m",459,"Ixigo","https://www.ixigo.com/buses/hyderabad-bangalore-sts"],
+["Agra","Delhi","LeafyBus","AC Seater Electric 2+2","06:30","4h 25m",249,"EaseMyTrip","agra-to-delhi-bus-tickets"],
+["Agra","Delhi","IntrCity, NueGo, Gola Bus & more","Bus (all types)","00:00","~3h 55m",156,"redBus","https://redbus.com/bus-ticket/agra-to-delhi"],
+["Delhi","Agra","NueGo","AC Electric Bus","05:15","4h 50m",199,"redBus","https://redbus.com/bus-ticket/delhi-to-agra"],
+["Delhi","Agra","UPSRTC","State bus","03:10","4h 49m",199,"redBus","https://redbus.com/bus-ticket/delhi-to-agra"],
+["Delhi","Agra","Gola Bus Service","Bus","07:00","3h 15m",199,"redBus","https://redbus.com/bus-ticket/delhi-to-agra"],
+["Delhi","Agra","Multiple operators","Bus (all types)","00:00","4h 3m",199,"redBus","https://www.redbus.in/bus-tickets/Delhi-to-Agra"],
+["Delhi","Agra","RSRTC Express","Non-AC Seater 2+3","19:30","9h 30m",286,"MakeMyTrip","https://www.makemytrip.com/bus-tickets/upsrtc-delhi-agra.html"],
+["Delhi","Agra","Multiple operators (67)","Bus","—","~4h",199,"Ixigo","https://www.ixigo.com/buses/delhi-agra-sts"]
 ];
+var BUSES=D.map(function(r){return{f:r[0],t:r[1],op:r[2],ty:r[3],dep:r[4],dur:r[5],fare:r[6],pl:r[7],u:r[8].indexOf("http")?E+r[8]:r[8]}});
 var view=BUSES.slice();
 function $(i){return document.getElementById(i)}
-(function(){var c={};BUSES.forEach(function(b){c[b.f]=1;c[b.t]=1});$("cities").innerHTML=Object.keys(c).sort().map(function(x){return "<option value='"+x+"'>"}).join("");
-var d=new Date();$("date").value=d.toISOString().slice(0,10);render()})();
+function norm(s){return s.trim().toLowerCase().replace("bengaluru","bangalore").replace("new delhi","delhi").replace("bombay","mumbai")}
+(function(){var c={},p={};BUSES.forEach(function(b){c[b.f]=1;c[b.t]=1;p[b.pl]=1});
+$("cities").innerHTML=Object.keys(c).sort().map(function(x){return "<option value='"+x+"'>"}).join("");
+$("pf").innerHTML="<option value=''>All platforms</option>"+Object.keys(p).sort().map(function(x){return "<option>"+x+"</option>"}).join("");
+$("date").value=new Date().toISOString().slice(0,10);apply()})();
+function apply(){var f=norm($("from").value),t=norm($("to").value),p=$("pf").value;
+view=BUSES.filter(function(b){return (!f||b.f.toLowerCase().indexOf(f)>-1)&&(!t||b.t.toLowerCase().indexOf(t)>-1)&&(!p||b.pl==p)});render()}
 function render(){
 var s=$("sort").value,v=view.slice().sort(function(a,b){return s=="fare"?a.fare-b.fare:a.dep.localeCompare(b.dep)});
-$("list").innerHTML=v.length?v.map(function(b){var i=BUSES.indexOf(b);return "<div class='card bus'><div><h3>"+b.f+" → "+b.t+"</h3><div class='meta'>"+b.op+"</div><div class='meta'><span class='tag'>"+b.ty+"</span><span class='tag'>Dep "+b.dep+"</span><span class='tag'>"+b.dur+"</span></div><button onclick='bookBus("+i+")'>Book Now on "+b.pl+" ↗</button></div><div class='price'>₹"+b.fare+"<div class='meta'>from · via "+b.pl+"</div></div></div>"}).join(""):"<div class='card'>No buses found for this route in our data snapshot. Try Gwalior, Bhopal, Jhansi, Biaora, Roorkee or Sidhi.</div>"}
-function doSearch(){var f=$("from").value.trim().toLowerCase(),t=$("to").value.trim().toLowerCase();
-view=BUSES.filter(function(b){return (!f||b.f.toLowerCase().indexOf(f)>-1)&&(!t||b.t.toLowerCase().indexOf(t)>-1)});render();$("buses").scrollIntoView()}
-function reset(){view=BUSES.slice();$("from").value="";$("to").value="";render()}
-function bookBus(i){var b=BUSES[i];window.open(b.u,"_blank","noopener")}
+var m={};v.forEach(function(b){if(!m[b.pl]||b.fare<m[b.pl])m[b.pl]=b.fare});
+var ks=Object.keys(m).sort(function(a,b){return m[a]-m[b]});
+$("sum").innerHTML=v.length?"<b>"+v.length+" options</b> · Cheapest by platform: "+ks.map(function(k){return k+" ₹"+m[k]}).join(" · "):"";
+$("list").innerHTML=v.length?v.map(function(b){var i=BUSES.indexOf(b);return "<div class='card bus'><div><h3>"+b.f+" → "+b.t+"</h3><div class='meta'>"+b.op+"</div><div class='meta'><span class='tag'>"+b.ty+"</span><span class='tag'>Dep "+b.dep+"</span><span class='tag'>"+b.dur+"</span></div><button onclick='bookBus("+i+")'>Book Now on "+b.pl+" ↗</button></div><div class='price'>₹"+b.fare+"<div class='meta'>from · "+b.pl+"</div></div></div>"}).join(""):"<div class='card'>No buses for this route in our data yet. Try the opposite direction, or pick one of the suggested cities from the dropdown.</div>"}
+function doSearch(){apply();$("buses").scrollIntoView()}
+function reset(){$("from").value="";$("to").value="";$("pf").value="";apply()}
+function swap(){var a=$("from").value;$("from").value=$("to").value;$("to").value=a;doSearch()}
+function bookBus(i){window.open(BUSES[i].u,"_blank","noopener")}
 function cancelGo(){window.open($("plat").value,"_blank","noopener")}
 </script>
 </body>
